@@ -18,30 +18,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
-
-
-
 @Composable
 fun MainScreen(navController: NavHostController, employeeList: List<Employee>) {
     Scaffold(
         topBar = {
-            UniqueTopAppBar()
+            UniqueTopAppBar(navController)
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("employee_form_screen") },
                 contentColor = Color.White,
-                containerColor = Color(0xFFf51bb1)
+                containerColor = Color(0xFFaac2e7)
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add")
             }
         }
     ) { paddingValues ->
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8B8E4))
-            .padding(paddingValues)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFe6edf8))
+                .padding(paddingValues)
         ) {
             LazyScrollableCardList(employeeList) { index ->
                 navController.navigate("employee_detail_screen/$index")
@@ -51,16 +49,12 @@ fun MainScreen(navController: NavHostController, employeeList: List<Employee>) {
 }
 
 @Composable
-fun UniqueTopAppBar() {
+fun UniqueTopAppBar(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .background(
-                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                    colors = listOf(Color(0xFFf51bb1), Color(0xFFf8b8e4))
-                )
-            )
+            .background(Color(0xFFe8e9e7))
     ) {
         Row(
             modifier = Modifier
@@ -73,26 +67,24 @@ fun UniqueTopAppBar() {
 
             Icon(
                 imageVector = Icons.Filled.Menu,
-                contentDescription = "Menu",
-                tint = Color.White
+                contentDescription = "Menu"
             )
-
 
             Text(
                 text = "Employee List",
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 ),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
 
-
             Icon(
                 imageVector = Icons.Filled.Add,
                 contentDescription = "Add Employee",
-                tint = Color.White
+                modifier = Modifier.clickable {
+                    navController.navigate("employee_form_screen")
+                }
             )
         }
     }
@@ -132,11 +124,12 @@ fun CardItem(employee: Employee, onCardClick: () -> Unit) {
         ) {
             Text(
                 text = "Name: ${employee.name}",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFf51bb1))
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                )
             )
             Text(
-                text = "Department: ${employee.department}",
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal)
+                text = "Department: ${employee.department}"
             )
         }
     }

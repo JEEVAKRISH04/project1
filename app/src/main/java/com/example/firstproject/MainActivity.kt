@@ -15,8 +15,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferencesManager = PreferencesManager(this)
-
-        setContent {
+       setContent {
             MyApp(preferencesManager)
         }
     }
@@ -27,7 +26,7 @@ class MainActivity : ComponentActivity() {
 fun MyApp(preferencesManager: PreferencesManager) {
     val navController = rememberNavController()
     var employeeList = remember {
-        mutableListOf(preferencesManager.getEmployeeList())
+        mutableStateListOf(preferencesManager.getEmployeeList())
     }
     NavHost(
         navController = navController,
