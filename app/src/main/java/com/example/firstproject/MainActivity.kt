@@ -1,5 +1,6 @@
 package com.example.firstproject
 
+import MainScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,20 +26,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(preferencesManager: PreferencesManager) {
     val navController = rememberNavController()
-    var employeeList = remember {
-        mutableStateListOf(preferencesManager.getEmployeeList())
-    }
+    var employeeList by remember { mutableStateOf(preferencesManager.getEmployeeList()) }
+
     NavHost(
         navController = navController,
         startDestination = "main_screen"
     ) {
         composable("main_screen") {
-            MainScreen(navController = navController, preferencesManager.getEmployeeList())
+            MainScreen(navController = navController, preferencesManager.getEmployeeList(), preferencesManager = preferencesManager)
         }
         composable("employee_form_screen") {
             EmployeeDetailsForm(navController) { newEmployee ->
                 preferencesManager.saveEmployee(newEmployee)
-                employeeList.add(employeeList[employeeList.size])
+                employeeList= preferencesManager.getEmployeeList()
                 navController.popBackStack()
             }
         }

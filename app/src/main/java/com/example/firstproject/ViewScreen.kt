@@ -11,7 +11,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,7 +50,7 @@ fun EmployeeSwipeableDetailScreen(navController: NavHostController, employees: L
                     modifier = Modifier.weight(1f),
                     onClick = { navController.popBackStack() }
                 ) {
-                    Icon(imageVector = Icons.Filled.Home, contentDescription = "Back")
+                    Icon(imageVector = Icons.Filled.Search, contentDescription = "Back")
                 }
             } else {
                 Box(
@@ -106,7 +108,7 @@ fun EmployeeSwipeableDetailScreen(navController: NavHostController, employees: L
                     modifier = Modifier.weight(1f),
                     onClick = { navController.popBackStack() }
                 ) {
-                    Icon(imageVector = Icons.Filled.Home, contentDescription = "Back")
+                    Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
                 }
             } else {
                 Box(

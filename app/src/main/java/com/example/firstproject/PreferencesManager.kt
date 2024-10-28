@@ -28,4 +28,18 @@ class PreferencesManager(context: Context) {
         return Gson().fromJson(json, type) ?: emptyList()
     }
 
+
+    fun deleteEmployeeAtIndex(index: Int) {
+        val currentList = getEmployeeList().toMutableList()
+        currentList.removeAt(index)
+        val json = Gson().toJson(currentList)
+        sharedPreferences.edit().putString(EMPLOYEE_LIST_KEY, json).apply()
+
+    }
+
+
 }
+
+
+
+

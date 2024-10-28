@@ -21,9 +21,13 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmployeeDetailsForm(navController: NavHostController, newEmployee: (Employee) -> Unit) {
+fun EmployeeDetailsForm(
+    navController: NavHostController,
+    newEmployee: (Employee) -> Unit )
+{
     val context = LocalContext.current
     val preferencesManager = PreferencesManager(context)
+
 
     var selectedDate by remember { mutableStateOf("Select Date") }
     var selectedTime by remember { mutableStateOf("Select Time") }
@@ -32,6 +36,9 @@ fun EmployeeDetailsForm(navController: NavHostController, newEmployee: (Employee
     var selectedDepartment by remember { mutableStateOf("") }
 
     val departmentOptions = listOf("Engineering", "Marketing", "HR", "Finance")
+
+
+
 
     Scaffold(
         topBar = {
@@ -187,6 +194,7 @@ fun EmployeeDetailsForm(navController: NavHostController, newEmployee: (Employee
                         dateOfJoining = selectedDate,
                         shiftTime = selectedTime
                     )
+
                     preferencesManager.saveEmployee(newEmployee)
                     navController.popBackStack()
                 },
@@ -198,6 +206,10 @@ fun EmployeeDetailsForm(navController: NavHostController, newEmployee: (Employee
         }
     }
 }
+
+
+
+
 
 fun showDatePicker(context: Context, onDateSelected: (String) -> Unit) {
     val calendar = Calendar.getInstance()

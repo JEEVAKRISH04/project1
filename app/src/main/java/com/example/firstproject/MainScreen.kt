@@ -1,5 +1,3 @@
-package com.example.firstproject
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,8 +6,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,12 +21,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.firstproject.Employee
+import com.example.firstproject.PreferencesManager
 
 @Composable
-fun MainScreen(navController: NavHostController, employeeList: List<Employee>) {
+fun MainScreen(navController: NavHostController, employeeList: List<Employee>, preferencesManager: PreferencesManager) {
+
+    var employeeList by remember { mutableStateOf(emptyList<Employee>()) }
+    var isSearching by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
+
+
+    LaunchedEffect(Unit) {
+        employeeList = preferencesManager.getEmployeeList()
+    }
+
+
     Scaffold(
         topBar = {
-            UniqueTopAppBar(navController)
+            UniqueTopAppBar(navController, isSearching, onSearchIconClick = {
+                isSearching = !isSearching
+                searchText = ""
+            }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -40,16 +61,60 @@ fun MainScreen(navController: NavHostController, employeeList: List<Employee>) {
                 .fillMaxSize()
                 .background(Color(0xFFe6edf8))
                 .padding(paddingValues)
-        ) {
-            LazyScrollableCardList(employeeList) { index ->
-                navController.navigate("employee_detail_screen/$index")
+        )
+
+
+        {
+
+            Column {
+                // Search box
+                if (isSearching) {
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { query ->
+                            searchText = query
+                            employeeList = if (query.isNotEmpty()) {
+                                val matchingEmployee = preferencesManager.getEmployeeList()
+                                    .find { it.name.contains(query, ignoreCase = true) }
+                                if (matchingEmployee != null) {
+                                    listOf(matchingEmployee) + preferencesManager.getEmployeeList()
+                                        .filter { it != matchingEmployee }
+                                } else {
+                                    preferencesManager.getEmployeeList()
+                                }
+                            } else {
+                                preferencesManager.getEmployeeList()
+                            }
+                        },
+                        label = { Text("Search Employee") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        singleLine = true
+                    )
+                }
+
+
+
+                LazyScrollableCardList(
+                    employeeList,
+                    onCardClick = { index ->
+                        navController.navigate("employee_detail_screen/$index")
+                    }, onDeleteClick = { index ->
+                        preferencesManager.deleteEmployeeAtIndex(index)
+                        employeeList = preferencesManager.getEmployeeList()
+
+                    }
+                )
             }
+
         }
     }
 }
 
+
 @Composable
-fun UniqueTopAppBar(navController: NavHostController) {
+fun UniqueTopAppBar(navController: NavHostController, isSearching: Boolean, onSearchIconClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -80,20 +145,20 @@ fun UniqueTopAppBar(navController: NavHostController) {
             )
 
             Icon(
-                imageVector = Icons.Filled.Add,
+                imageVector = Icons.Filled.Search,
                 contentDescription = "Add Employee",
-                modifier = Modifier.clickable {
-                    navController.navigate("employee_form_screen")
-                }
+                modifier = Modifier.clickable { onSearchIconClick() }
             )
         }
     }
 }
 
+
 @Composable
 fun LazyScrollableCardList(
     employeeList: List<Employee>,
-    onCardClick: (Int) -> Unit
+    onCardClick: (Int) -> Unit,
+    onDeleteClick: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -102,13 +167,18 @@ fun LazyScrollableCardList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(employeeList.size) { index ->
-            CardItem(employee = employeeList[index], onCardClick = { onCardClick(index) })
+            CardItem(
+                employee = employeeList[index],
+                onCardClick = { onCardClick(index) },
+                onDeleteClick = { onDeleteClick(index) }  )
         }
     }
 }
 
+
+
 @Composable
-fun CardItem(employee: Employee, onCardClick: () -> Unit) {
+fun CardItem(employee: Employee, onCardClick: () -> Unit, onDeleteClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,19 +188,34 @@ fun CardItem(employee: Employee, onCardClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "Name: ${employee.name}",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            Text(
-                text = "Department: ${employee.department}"
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween // Space between items
+            ) {
+                Column {
+                    Text(
+                        text = "Name: ${employee.name}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = "Department: ${employee.department}"
+                    )
+                }
+                Button(
+                    onClick = { onDeleteClick() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    modifier = Modifier.padding(start = 8.dp) // Add space between text and button
+                ) {
+                    Text(text = "Delete", color = Color.White)
+                }
+            }
         }
     }
 }
+
