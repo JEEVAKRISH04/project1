@@ -5,9 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.google.gson.Gson
 
 
 class MainActivity : ComponentActivity() {
@@ -33,14 +36,26 @@ fun MyApp(preferencesManager: PreferencesManager) {
         startDestination = "main_screen"
     ) {
         composable("main_screen") {
-            MainScreen(navController = navController, preferencesManager.getEmployeeList(), preferencesManager = preferencesManager)
+            MainScreen(
+                navController = navController,
+                preferencesManager.getEmployeeList(),
+                preferencesManager = preferencesManager)
         }
         composable("employee_form_screen") {
-            EmployeeDetailsForm(navController) { newEmployee ->
-                preferencesManager.saveEmployee(newEmployee)
-                employeeList= preferencesManager.getEmployeeList()
-                navController.popBackStack()
+
+            EmployeeDetailsForm(
+                navController = navController,
+                existingEmployee = null
+            )
+        }
+
+        composable("employee_form_screen/{employeeData}") { backStackEntry ->
+            val employeeDataJson = backStackEntry.arguments?.getString("employeeData")
+            val employee = employeeDataJson?.let {
+                Gson().fromJson(it, Employee::class.java)
             }
+
+            EmployeeDetailsForm(navController, employee)
         }
 
         composable("employee_detail_screen/{employeeIndex}") { backStackEntry ->

@@ -2,7 +2,6 @@ package com.example.firstproject
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.google.gson.Gson
 
 
@@ -11,7 +10,7 @@ class PreferencesManager(context: Context) {
         context.getSharedPreferences("", Context.MODE_PRIVATE)
 
 
-    private val EMPLOYEE_LIST_KEY = "111"
+    private val EMPLOYEE_LIST_KEY = "11"
 
 
     fun saveEmployee(employee: Employee) {
@@ -28,6 +27,15 @@ class PreferencesManager(context: Context) {
         return Gson().fromJson(json, type) ?: emptyList()
     }
 
+    fun updateEmployee(oldEmployee: Employee, newEmployee: Employee) {
+        val currentList = getEmployeeList().toMutableList()
+        val index = currentList.indexOfFirst { it == oldEmployee }
+        if (index != -1) {
+            currentList[index] = newEmployee
+            val json = Gson().toJson(currentList)
+            sharedPreferences.edit().putString(EMPLOYEE_LIST_KEY, json).apply()
+        }
+    }
 
     fun deleteEmployeeAtIndex(index: Int) {
         val currentList = getEmployeeList().toMutableList()

@@ -1,3 +1,4 @@
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,11 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.firstproject.Employee
 import com.example.firstproject.PreferencesManager
+import com.google.gson.Gson
 
 @Composable
-fun MainScreen(navController: NavHostController, employeeList: List<Employee>, preferencesManager: PreferencesManager) {
+fun MainScreen(navController: NavHostController,
+               employeeList: List<Employee>,
+               preferencesManager: PreferencesManager) {
 
-    var employeeList by remember { mutableStateOf(emptyList<Employee>()) }
+    var employeeList by remember { mutableStateOf(preferencesManager.getEmployeeList()) }
     var isSearching by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
 
@@ -47,11 +51,13 @@ fun MainScreen(navController: NavHostController, employeeList: List<Employee>, p
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("employee_form_screen") },
+                onClick = {
+                    navController.navigate("employee_form_screen")
+                          },
                 contentColor = Color.White,
                 containerColor = Color(0xFFaac2e7)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
+                Icon(Icons.Filled.Add, contentDescription = "Add ")
             }
         }
     ) { paddingValues ->
@@ -67,7 +73,6 @@ fun MainScreen(navController: NavHostController, employeeList: List<Employee>, p
         {
 
             Column {
-                // Search box
                 if (isSearching) {
                     OutlinedTextField(
                         value = searchText,
@@ -104,7 +109,12 @@ fun MainScreen(navController: NavHostController, employeeList: List<Employee>, p
                         preferencesManager.deleteEmployeeAtIndex(index)
                         employeeList = preferencesManager.getEmployeeList()
 
+                    },
+                    onEditClick = { index ->
+                        val employeeData = Gson().toJson(employeeList[index])
+                        navController.navigate("employee_form_screen/$employeeData")
                     }
+
                 )
             }
 
@@ -118,7 +128,7 @@ fun UniqueTopAppBar(navController: NavHostController, isSearching: Boolean, onSe
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(70.dp)
             .background(Color(0xFFe8e9e7))
     ) {
         Row(
@@ -158,7 +168,8 @@ fun UniqueTopAppBar(navController: NavHostController, isSearching: Boolean, onSe
 fun LazyScrollableCardList(
     employeeList: List<Employee>,
     onCardClick: (Int) -> Unit,
-    onDeleteClick: (Int) -> Unit
+    onDeleteClick: (Int) -> Unit,
+    onEditClick: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -170,7 +181,9 @@ fun LazyScrollableCardList(
             CardItem(
                 employee = employeeList[index],
                 onCardClick = { onCardClick(index) },
-                onDeleteClick = { onDeleteClick(index) }  )
+                onDeleteClick = { onDeleteClick(index) },
+                onEditClick = { onEditClick(index) }
+            )
         }
     }
 }
@@ -178,7 +191,10 @@ fun LazyScrollableCardList(
 
 
 @Composable
-fun CardItem(employee: Employee, onCardClick: () -> Unit, onDeleteClick: () -> Unit) {
+fun CardItem(employee: Employee,
+             onCardClick: () -> Unit,
+             onDeleteClick: () -> Unit,
+             onEditClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -188,13 +204,13 @@ fun CardItem(employee: Employee, onCardClick: () -> Unit, onDeleteClick: () -> U
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(5.dp).padding(10.dp,0.dp,10.dp,0.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween // Space between items
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
                     Text(
@@ -207,12 +223,25 @@ fun CardItem(employee: Employee, onCardClick: () -> Unit, onDeleteClick: () -> U
                         text = "Department: ${employee.department}"
                     )
                 }
-                Button(
-                    onClick = { onDeleteClick() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                    modifier = Modifier.padding(start = 8.dp) // Add space between text and button
-                ) {
-                    Text(text = "Delete", color = Color.White)
+                Column {
+
+                    Button(
+                        onClick = { onEditClick() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF82E2EE)),
+                        modifier = Modifier.width(100.dp)
+                    ) {
+                        Text(text = "Edit", color = Color.White)
+                    }
+
+
+                    Button(
+                        onClick = { onDeleteClick() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFA709F)),
+                        modifier = Modifier.width(100.dp)
+
+                    ) {
+                        Text(text = "Delete", color = Color.White)
+                    }
                 }
             }
         }

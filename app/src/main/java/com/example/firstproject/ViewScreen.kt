@@ -2,21 +2,24 @@
 
 package com.example.firstproject
 
+import UniqueTopAppBar
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -25,13 +28,35 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
-import java.nio.file.WatchEvent
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun EmployeeSwipeableDetailScreen(navController: NavHostController, employees: List<Employee>, initialPage: Int) {
     val pagerState = rememberPagerState(initialPage = initialPage)
     val coroutineScope = rememberCoroutineScope()
+
+
+    var isSearching by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
+
+    val filteredEmployees = if (searchText.isNotEmpty()) {
+        employees.filter { it.name.contains(searchText, ignoreCase = true) }
+    } else {
+        employees
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -50,7 +75,7 @@ fun EmployeeSwipeableDetailScreen(navController: NavHostController, employees: L
                     modifier = Modifier.weight(1f),
                     onClick = { navController.popBackStack() }
                 ) {
-                    Icon(imageVector = Icons.Filled.Search, contentDescription = "Back")
+                    Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
                 }
             } else {
                 Box(
@@ -106,9 +131,11 @@ fun EmployeeSwipeableDetailScreen(navController: NavHostController, employees: L
             if (nextEmployee.isEmpty()) {
                 IconButton(
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.popBackStack() }
+                    onClick = {
+                        navController.navigate("employee_form_screen")
+                    }
                 ) {
-                    Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
                 }
             } else {
                 Box(
@@ -180,6 +207,15 @@ fun EmployeeDetailTab(employee: Employee) {
             )
             Divider(color =Color(0xFF12A3E7), thickness = 1.dp)
             Text(
+                text = "Email: ${employee.email}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+            )
+            Text(
+                text = "Phone Number: ${employee.number}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+            )
+
+            Text(
                 text = "Gender: ${employee.gender}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
@@ -193,6 +229,7 @@ fun EmployeeDetailTab(employee: Employee) {
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
             Text(
+
                 text = "Shift Time: ${employee.shiftTime}",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
             )
