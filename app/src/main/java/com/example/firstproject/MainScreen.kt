@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -35,7 +36,11 @@ fun MainScreen(navController: NavHostController,
     var isSearching by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
 
-
+    val filteredList = if (searchText.isNotEmpty()) {
+        employeeList.filter { it.name.contains(searchText, ignoreCase = true) }
+    } else {
+        employeeList
+    }
     LaunchedEffect(Unit) {
         employeeList = preferencesManager.getEmployeeList()
     }
@@ -43,12 +48,19 @@ fun MainScreen(navController: NavHostController,
 
     Scaffold(
         topBar = {
-            UniqueTopAppBar(navController, isSearching, onSearchIconClick = {
-                isSearching = !isSearching
-                searchText = ""
-            }
-            )
-        },
+            UniqueTopAppBar(
+                isSearching = isSearching,
+                searchText = searchText,
+                onSearchTextChange = { searchText = it },
+                onSearchIconClick = {
+                    isSearching = !isSearching
+                    searchText = ""
+                },
+                onCloseSearchClick = {
+                    isSearching = false
+                    searchText = ""
+                }
+            )        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -73,36 +85,9 @@ fun MainScreen(navController: NavHostController,
         {
 
             Column {
-                if (isSearching) {
-                    OutlinedTextField(
-                        value = searchText,
-                        onValueChange = { query ->
-                            searchText = query
-                            employeeList = if (query.isNotEmpty()) {
-                                val matchingEmployee = preferencesManager.getEmployeeList()
-                                    .find { it.name.contains(query, ignoreCase = true) }
-                                if (matchingEmployee != null) {
-                                    listOf(matchingEmployee) + preferencesManager.getEmployeeList()
-                                        .filter { it != matchingEmployee }
-                                } else {
-                                    preferencesManager.getEmployeeList()
-                                }
-                            } else {
-                                preferencesManager.getEmployeeList()
-                            }
-                        },
-                        label = { Text("Search Employee") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        singleLine = true
-                    )
-                }
-
-
 
                 LazyScrollableCardList(
-                    employeeList,
+                    employeeList=filteredList,
                     onCardClick = { index ->
                         navController.navigate("employee_detail_screen/$index")
                     }, onDeleteClick = { index ->
@@ -123,44 +108,56 @@ fun MainScreen(navController: NavHostController,
 }
 
 
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UniqueTopAppBar(navController: NavHostController, isSearching: Boolean, onSearchIconClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp)
-            .background(Color(0xFFe8e9e7))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .align(Alignment.Center),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-            Icon(
-                imageVector = Icons.Filled.Menu,
-                contentDescription = "Menu"
-            )
-
-            Text(
-                text = "Employee List",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Add Employee",
-                modifier = Modifier.clickable { onSearchIconClick() }
-            )
+fun UniqueTopAppBar(
+    isSearching: Boolean,
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    onSearchIconClick: () -> Unit,
+    onCloseSearchClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            if (isSearching) {
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = onSearchTextChange,
+                    placeholder = { Text("Search by name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            } else {
+                Text(
+                    text = "Employee List",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "Menu"
+                )
+            }
+        },
+        actions = {
+            if (isSearching) {
+                IconButton(onClick = onCloseSearchClick) {
+                    Icon(Icons.Default.Close, contentDescription = "Close Search")
+                }
+            } else {
+                IconButton(onClick = onSearchIconClick) {
+                    Icon(Icons.Filled.Search, contentDescription = "Search")
+                }
+            }
         }
-    }
+    )
 }
 
 

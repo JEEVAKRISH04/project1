@@ -4,7 +4,10 @@ import android.app.TimePickerDialog
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Home
@@ -62,202 +65,240 @@ fun EmployeeDetailsForm(
             )
         }
     ) { paddingValues ->
-        Column(
+
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp,30.dp,16.dp,30.dp),
-            verticalArrangement = Arrangement.Center,
+                .imePadding()
+                .navigationBarsPadding()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Row(
-                modifier = Modifier.fillMaxWidth().height(70.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Employee Name",
-                    modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(16.dp))
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") },
-                    modifier = Modifier.weight(2f)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Email",
-                        modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(16.dp))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
-
-                    label = { Text("Email") },
-                    modifier = Modifier.weight(2f)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Phone Number",
-                    modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(16.dp))
-                OutlinedTextField(
-                    value = number,
-                    onValueChange = { number = it },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    label = { Text("Mobile Number") },
-                    modifier = Modifier.weight(2f)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Gender",
-                    modifier = Modifier.weight(1f))
-                Row(verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(2f)) {
-                    RadioButton(
-                        selected = selectedGender == "Male",
-                        onClick = { selectedGender = "Male" }
-                    )
-                    Text(text = "Male")
-                    Spacer(modifier = Modifier.width(16.dp))
-                    RadioButton(
-                        selected = selectedGender == "Female",
-                        onClick = { selectedGender = "Female" }
-                    )
-                    Text(text = "Female")
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            var expanded by remember { mutableStateOf(false) }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Department",modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(16.dp))
-                Box(modifier = Modifier.weight(2f)) {
-                    OutlinedTextField(
-                        value = selectedDepartment,
-                        onValueChange = { },
-                        label = { Text("Department") },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
-                                modifier = Modifier.clickable { expanded = true },
-                                contentDescription = "Menu",
-                                tint = Color.Black
-                            )
-                        }
-                    )
-                    DropdownMenu(
-                        modifier = Modifier.fillMaxWidth(),
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        departmentOptions.forEach { department ->
-                            DropdownMenuItem(
-                                text = { Text(department) },
-                                onClick = {
-                                    selectedDepartment = department
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-
-            var submittedDate by remember { mutableStateOf("") }
-            var submittedTime by remember { mutableStateOf("") }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Date of Joining",modifier = Modifier.weight(1f))
-                Button(
-                    modifier = Modifier.weight(1.5f),
-                    onClick = { showDatePicker(context) { date -> selectedDate = date }
-                        submittedDate = selectedDate },
-                    colors = ButtonDefaults.buttonColors(containerColor = if (selectedDate != "Select Date") Color(0xFF5C95EC) else Color(0xFFaac2e7) ) ){
-                    Text(text = selectedDate, color = Color.White)
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Shift Time",modifier = Modifier.weight(1f))
-                Button(
-                    onClick = { showTimePicker(context) { time -> selectedTime = time }
-                        submittedTime = selectedTime},modifier = Modifier.weight(1.5f),
-                    colors = ButtonDefaults.buttonColors(containerColor = if (selectedTime != "Select Time") Color(0xFF5C95EC) else Color(0xFFaac2e7) ) ){
-
-                Text(text =selectedTime, color = Color.White)
-
-                    }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                Button(
-                    onClick = {
-
-
-                        val updatedEmployee = Employee(
-                            name,
-                            email,
-                            number,
-                            selectedGender,
-                            selectedDepartment,
-                            selectedDate,
-                            selectedTime
-                        )
-                        if (existingEmployee != null) {
-
-                            preferencesManager.updateEmployee(existingEmployee, updatedEmployee)
-                        } else {
-                            preferencesManager.saveEmployee(updatedEmployee)
-                        }
-
-                        navController.popBackStack()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97E99B))
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Submit", color = Color.White)
+                    Text(
+                        text = "Employee Name",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Name") },
+                        modifier = Modifier.weight(2f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Email",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+
+                        label = { Text("Email") },
+                        modifier = Modifier.weight(2f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Phone Number",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    OutlinedTextField(
+                        value = number,
+                        onValueChange = { number = it },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        label = { Text("Mobile Number") },
+                        modifier = Modifier.weight(2f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            item {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Gender",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(2f)
+                    ) {
+                        RadioButton(
+                            selected = selectedGender == "Male",
+                            onClick = { selectedGender = "Male" }
+                        )
+                        Text(text = "Male")
+                        Spacer(modifier = Modifier.width(16.dp))
+                        RadioButton(
+                            selected = selectedGender == "Female",
+                            onClick = { selectedGender = "Female" }
+                        )
+                        Text(text = "Female")
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            item {
+
+                var expanded by remember { mutableStateOf(false) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Department", modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Box(modifier = Modifier.weight(2f)) {
+                        OutlinedTextField(
+                            value = selectedDepartment,
+                            onValueChange = { },
+                            label = { Text("Department") },
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowDropDown,
+                                    modifier = Modifier.clickable { expanded = true },
+                                    contentDescription = "Menu",
+                                    tint = Color.Black
+                                )
+                            }
+                        )
+                        DropdownMenu(
+                            modifier = Modifier.fillMaxWidth(),
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            departmentOptions.forEach { department ->
+                                DropdownMenuItem(
+                                    text = { Text(department) },
+                                    onClick = {
+                                        selectedDepartment = department
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+            item {
+
+                var submittedDate by remember { mutableStateOf("") }
+                var submittedTime by remember { mutableStateOf("") }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Date of Joining", modifier = Modifier.weight(1f))
+                    Button(
+                        modifier = Modifier.weight(1.5f),
+                        onClick = {
+                            showDatePicker(context) { date -> selectedDate = date }
+                            submittedDate = selectedDate
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (selectedDate != "Select Date") Color(
+                                0xFF5C95EC
+                            ) else Color(0xFFaac2e7)
+                        )
+                    ) {
+                        Text(text = selectedDate, color = Color.White)
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Shift Time", modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = {
+                            showTimePicker(context) { time -> selectedTime = time }
+                            submittedTime = selectedTime
+                        }, modifier = Modifier.weight(1.5f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (selectedTime != "Select Time") Color(
+                                0xFF5C95EC
+                            ) else Color(0xFFaac2e7)
+                        )
+                    ) {
+
+                        Text(text = selectedTime, color = Color.White)
+
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+            item {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    Button(
+                        onClick = {
+
+
+                            val updatedEmployee = Employee(
+                                name,
+                                email,
+                                number,
+                                selectedGender,
+                                selectedDepartment,
+                                selectedDate,
+                                selectedTime
+                            )
+                            if (existingEmployee != null) {
+
+                                preferencesManager.updateEmployee(existingEmployee, updatedEmployee)
+                            } else {
+                                preferencesManager.saveEmployee(updatedEmployee)
+                            }
+
+                            navController.popBackStack()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97E99B))
+                    ) {
+                        Text(text = "Submit", color = Color.White)
+                    }
                 }
             }
         }
