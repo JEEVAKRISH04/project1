@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,7 +30,6 @@ import com.google.gson.Gson
 
 @Composable
 fun MainScreen(navController: NavHostController,
-               employeeList: List<Employee>,
                preferencesManager: PreferencesManager) {
 
     var employeeList by remember { mutableStateOf(preferencesManager.getEmployeeList()) }
@@ -41,6 +41,8 @@ fun MainScreen(navController: NavHostController,
     } else {
         employeeList
     }
+
+
     LaunchedEffect(Unit) {
         employeeList = preferencesManager.getEmployeeList()
     }
@@ -60,7 +62,8 @@ fun MainScreen(navController: NavHostController,
                     isSearching = false
                     searchText = ""
                 }
-            )        },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -81,22 +84,23 @@ fun MainScreen(navController: NavHostController,
                 .padding(paddingValues)
         )
 
-
         {
 
             Column {
 
                 LazyScrollableCardList(
-                    employeeList=filteredList,
-                    onCardClick = { index ->
-                        navController.navigate("employee_detail_screen/$index")
-                    }, onDeleteClick = { index ->
-                        preferencesManager.deleteEmployeeAtIndex(index)
+                    filteredList,
+
+                    onCardClick = { newindex ->
+                        navController.navigate("employee_detail_screen/$newindex")
+                    },
+                    onDeleteClick = { newindex ->
+                        preferencesManager.deleteEmployeeAtIndex(newindex)
                         employeeList = preferencesManager.getEmployeeList()
 
                     },
-                    onEditClick = { index ->
-                        val employeeData = Gson().toJson(employeeList[index])
+                    onEditClick = { newindex ->
+                        val employeeData = Gson().toJson(filteredList[newindex])
                         navController.navigate("employee_form_screen/$employeeData")
                     }
 
@@ -106,10 +110,6 @@ fun MainScreen(navController: NavHostController,
         }
     }
 }
-
-
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,8 +124,13 @@ fun UniqueTopAppBar(
     TopAppBar(
         title = {
             if (isSearching) {
-                OutlinedTextField(
+                TextField(
                     value = searchText,
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
                     onValueChange = onSearchTextChange,
                     placeholder = { Text("Search by name") },
                     modifier = Modifier.fillMaxWidth(),
@@ -168,21 +173,22 @@ fun LazyScrollableCardList(
     onDeleteClick: (Int) -> Unit,
     onEditClick: (Int) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(employeeList.size) { index ->
-            CardItem(
-                employee = employeeList[index],
-                onCardClick = { onCardClick(index) },
-                onDeleteClick = { onDeleteClick(index) },
-                onEditClick = { onEditClick(index) }
-            )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(employeeList.size) { index ->
+                CardItem(
+                    employee = employeeList[index],
+                    onCardClick = { onCardClick(index) },
+                    onDeleteClick = { onDeleteClick(index) },
+                    onEditClick = { onEditClick(index) }
+                )
+            }
         }
-    }
 }
 
 
@@ -201,7 +207,9 @@ fun CardItem(employee: Employee,
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
-            modifier = Modifier.padding(5.dp).padding(10.dp,0.dp,10.dp,0.dp),
+            modifier = Modifier
+                .padding(5.dp)
+                .padding(10.dp, 0.dp, 10.dp, 0.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(

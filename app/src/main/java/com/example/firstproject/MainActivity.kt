@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var preferencesManager: PreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         preferencesManager = PreferencesManager(this)
        setContent {
@@ -38,7 +40,6 @@ fun MyApp(preferencesManager: PreferencesManager) {
         composable("main_screen") {
             MainScreen(
                 navController = navController,
-                preferencesManager.getEmployeeList(),
                 preferencesManager = preferencesManager)
         }
         composable("employee_form_screen") {

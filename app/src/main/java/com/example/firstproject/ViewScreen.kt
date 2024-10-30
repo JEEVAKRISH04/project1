@@ -35,29 +35,6 @@ fun EmployeeSwipeableDetailScreen(navController: NavHostController, employees: L
     val pagerState = rememberPagerState(initialPage = initialPage)
     val coroutineScope = rememberCoroutineScope()
 
-
-    var isSearching by remember { mutableStateOf(false) }
-    var searchText by remember { mutableStateOf("") }
-
-    val filteredEmployees = if (searchText.isNotEmpty()) {
-        employees.filter { it.name.contains(searchText, ignoreCase = true) }
-    } else {
-        employees
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     Column(modifier = Modifier.fillMaxSize()) {
 
         Row(
