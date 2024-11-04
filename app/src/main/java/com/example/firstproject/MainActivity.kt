@@ -5,12 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
-import androidx.core.view.WindowCompat
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.google.gson.Gson
 
 
@@ -40,7 +37,8 @@ fun MyApp(preferencesManager: PreferencesManager) {
         composable("main_screen") {
             MainScreen(
                 navController = navController,
-                preferencesManager = preferencesManager)
+                preferencesManager = preferencesManager
+            )
         }
         composable("employee_form_screen") {
 
@@ -64,7 +62,8 @@ fun MyApp(preferencesManager: PreferencesManager) {
             EmployeeSwipeableDetailScreen(
                 navController = navController,
                 employees = preferencesManager.getEmployeeList(),
-                initialPage = employeeIndex
+                initialPage = employeeIndex,
+                preferencesManager = preferencesManager
             )
         }
     }

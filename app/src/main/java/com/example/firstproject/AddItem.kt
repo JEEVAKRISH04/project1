@@ -2,13 +2,16 @@ package com.example.firstproject
 
 import android.app.TimePickerDialog
 import android.content.Context
+import android.util.Patterns
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
@@ -18,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,18 +38,17 @@ fun EmployeeDetailsForm(
     val context = LocalContext.current
     val preferencesManager = PreferencesManager(context)
 
-
     var name by remember { mutableStateOf(existingEmployee?.name ?: "") }
+    var nameError by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf(existingEmployee?.email ?: "") }
+    var emailError by remember { mutableStateOf(false) }
     var number by remember { mutableStateOf(existingEmployee?.number ?: "") }
     var selectedGender by remember { mutableStateOf(existingEmployee?.gender ?: "Male") }
     var selectedDepartment by remember { mutableStateOf(existingEmployee?.department ?: "") }
     var selectedDate by remember { mutableStateOf(existingEmployee?.dateOfJoining ?: "Select Date") }
     var selectedTime by remember { mutableStateOf(existingEmployee?.shiftTime ?: "Select Time") }
 
-
-
-
+    fun isValidName() = name.isNotBlank()
     val departmentOptions = listOf("Engineering", "Marketing", "HR", "Finance")
 
 
@@ -54,11 +57,10 @@ fun EmployeeDetailsForm(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Enter Your Detail",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
+                title = { Text(text = "Enter Your Detail")},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Filled.Home, contentDescription = "Back")
+                        Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFFe8e9e7))
@@ -90,8 +92,15 @@ fun EmployeeDetailsForm(
                     Spacer(modifier = Modifier.width(16.dp))
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it },
+                        onValueChange = {
+                            name = it
+                            nameError = !isValidName()
+                                        },
+                        isError = nameError,
                         label = { Text("Name") },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next
+                        ),
                         modifier = Modifier.weight(2f)
                     )
                 }
@@ -110,12 +119,19 @@ fun EmployeeDetailsForm(
                     Spacer(modifier = Modifier.width(16.dp))
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
 
+                        onValueChange = { email = it
+                            emailError = !Patterns.EMAIL_ADDRESS.matcher(it).matches()
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        isError = emailError,
                         label = { Text("Email") },
                         modifier = Modifier.weight(2f)
                     )
+
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -132,8 +148,15 @@ fun EmployeeDetailsForm(
                     Spacer(modifier = Modifier.width(16.dp))
                     OutlinedTextField(
                         value = number,
-                        onValueChange = { number = it },
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        onValueChange = { Text ->
+                            if (Text.all { it.isDigit() }) {
+                                number = Text
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
                         label = { Text("Mobile Number") },
                         modifier = Modifier.weight(2f)
                     )
@@ -184,7 +207,8 @@ fun EmployeeDetailsForm(
                         OutlinedTextField(
                             value = selectedDepartment,
                             onValueChange = { },
-                            label = { Text("Department") },
+                            modifier = Modifier.clickable { expanded = true },
+                            label = { Text("Department",modifier = Modifier.clickable { expanded = true }) },
                             readOnly = true,
                             trailingIcon = {
                                 Icon(
@@ -215,9 +239,6 @@ fun EmployeeDetailsForm(
                 Spacer(modifier = Modifier.height(20.dp))
             }
             item {
-
-                var submittedDate by remember { mutableStateOf("") }
-                var submittedTime by remember { mutableStateOf("") }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -227,8 +248,7 @@ fun EmployeeDetailsForm(
                     Button(
                         modifier = Modifier.weight(1.5f),
                         onClick = {
-                            showDatePicker(context) { date -> selectedDate = date }
-                            submittedDate = selectedDate
+                            showDatePicker(context,selectedDate) { date -> selectedDate = date }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (selectedDate != "Select Date") Color(
@@ -249,19 +269,17 @@ fun EmployeeDetailsForm(
                 ) {
                     Text(text = "Shift Time", modifier = Modifier.weight(1f))
                     Button(
+                        modifier = Modifier.weight(1.5f),
                         onClick = {
-                            showTimePicker(context) { time -> selectedTime = time }
-                            submittedTime = selectedTime
-                        }, modifier = Modifier.weight(1.5f),
+                            showTimePicker(context,selectedTime) { time -> selectedTime = time }
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (selectedTime != "Select Time") Color(
                                 0xFF5C95EC
                             ) else Color(0xFFaac2e7)
                         )
                     ) {
-
                         Text(text = selectedTime, color = Color.White)
-
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -276,24 +294,22 @@ fun EmployeeDetailsForm(
                     Button(
                         onClick = {
 
+                            if (!emailError) {
+                                val updatedEmployee = Employee(
+                                    name,
+                                    email,
+                                    number,
+                                    selectedGender,
+                                    selectedDepartment,
+                                    selectedDate,
+                                    selectedTime
+                                )
+                                if (existingEmployee != null) {
+                                    preferencesManager.updateEmployee( existingEmployee, updatedEmployee)
+                                } else {  preferencesManager.saveEmployee(updatedEmployee) }
 
-                            val updatedEmployee = Employee(
-                                name,
-                                email,
-                                number,
-                                selectedGender,
-                                selectedDepartment,
-                                selectedDate,
-                                selectedTime
-                            )
-                            if (existingEmployee != null) {
-
-                                preferencesManager.updateEmployee(existingEmployee, updatedEmployee)
-                            } else {
-                                preferencesManager.saveEmployee(updatedEmployee)
+                                navController.popBackStack()
                             }
-
-                            navController.popBackStack()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97E99B))
                     ) {
@@ -305,15 +321,22 @@ fun EmployeeDetailsForm(
     }
 }
 
-
-
-
-
-fun showDatePicker(context: Context, onDateSelected: (String) -> Unit) {
+fun showDatePicker(context: Context, selectedDate: String, onDateSelected: (String) -> Unit) {
     val calendar = Calendar.getInstance()
+
+
+    if (selectedDate != "Select Date") {
+        val parts = selectedDate.split("-")
+        calendar.set(Calendar.DAY_OF_MONTH, parts[0].toInt())
+        calendar.set(Calendar.MONTH, parts[1].toInt() - 1)
+        calendar.set(Calendar.YEAR, parts[2].toInt())
+    }
+
     val datePickerDialog = android.app.DatePickerDialog(
         context,
-        { _, year, month, dayOfMonth -> onDateSelected("$dayOfMonth-${month + 1}-$year") },
+        { _, year, month, dayOfMonth ->
+            onDateSelected(String.format("%02d-%02d-%02d", dayOfMonth, month + 1, year))
+        },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
@@ -321,14 +344,27 @@ fun showDatePicker(context: Context, onDateSelected: (String) -> Unit) {
     datePickerDialog.show()
 }
 
-fun showTimePicker(context: Context, onTimeSelected: (String) -> Unit) {
+fun showTimePicker(context: Context, selectedTime: String, onTimeSelected: (String) -> Unit) {
     val calendar = Calendar.getInstance()
+
+    if(selectedTime != "Select Time") {
+        val parts = selectedTime.split(":")
+        val hour =parts[0].toInt()
+        val minute =parts[1].split(" ")[0].toInt()
+        val isPM =selectedTime.contains("PM")
+        calendar.set(Calendar.HOUR_OF_DAY,if (isPM && hour != 12) hour + 12 else if (!isPM && hour == 12) 0 else hour)
+        calendar.set(Calendar.MINUTE,minute)
+    }
     val timePickerDialog = TimePickerDialog(
         context,
-        { _, hourOfDay, minute -> onTimeSelected(String.format("%02d:%02d", hourOfDay, minute)) },
+        { _, hourOfDay, minute ->
+            val isPM = hourOfDay >= 12
+            onTimeSelected(String.format("%02d:%02d %s", if (hourOfDay % 12 == 0) 12 else  hourOfDay % 12, minute, if (isPM) "PM" else "AM"))
+        },
         calendar.get(Calendar.HOUR_OF_DAY),
         calendar.get(Calendar.MINUTE),
         false
     )
     timePickerDialog.show()
 }
+

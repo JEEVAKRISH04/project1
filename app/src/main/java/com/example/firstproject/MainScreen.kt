@@ -1,4 +1,3 @@
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,8 +11,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,18 +28,23 @@ import com.example.firstproject.PreferencesManager
 import com.google.gson.Gson
 
 @Composable
-fun MainScreen(navController: NavHostController,
-               preferencesManager: PreferencesManager) {
-
+fun MainScreen(
+    navController: NavHostController,
+    preferencesManager: PreferencesManager
+) {
     var employeeList by remember { mutableStateOf(preferencesManager.getEmployeeList()) }
     var isSearching by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
+    var filteredList by remember{mutableStateOf<List<Employee>>(emptyList())}
 
-    val filteredList = if (searchText.isNotEmpty()) {
+
+    filteredList =  if (searchText.isNotEmpty()) {
         employeeList.filter { it.name.contains(searchText, ignoreCase = true) }
     } else {
         employeeList
     }
+
+
 
 
     LaunchedEffect(Unit) {
@@ -91,16 +95,19 @@ fun MainScreen(navController: NavHostController,
                 LazyScrollableCardList(
                     filteredList,
 
-                    onCardClick = { newindex ->
-                        navController.navigate("employee_detail_screen/$newindex")
+                    onCardClick = { index ->
+                        val filterIndex = employeeList.indexOf(filteredList[index])
+                        navController.navigate("employee_detail_screen/$filterIndex")
                     },
-                    onDeleteClick = { newindex ->
-                        preferencesManager.deleteEmployeeAtIndex(newindex)
+                    onDeleteClick = { index ->
+                        val filterIndex = employeeList.indexOf(filteredList[index])
+                        preferencesManager.deleteEmployeeAtIndex(filterIndex)
                         employeeList = preferencesManager.getEmployeeList()
 
+
                     },
-                    onEditClick = { newindex ->
-                        val employeeData = Gson().toJson(filteredList[newindex])
+                    onEditClick = { index ->
+                        val employeeData = Gson().toJson(filteredList[index])
                         navController.navigate("employee_form_screen/$employeeData")
                     }
 
@@ -168,7 +175,7 @@ fun UniqueTopAppBar(
 
 @Composable
 fun LazyScrollableCardList(
-    employeeList: List<Employee>,
+    filteredList: List<Employee>,
     onCardClick: (Int) -> Unit,
     onDeleteClick: (Int) -> Unit,
     onEditClick: (Int) -> Unit
@@ -180,9 +187,9 @@ fun LazyScrollableCardList(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(employeeList.size) { index ->
+            items(filteredList.size) { index ->
                 CardItem(
-                    employee = employeeList[index],
+                    employee = filteredList[index],
                     onCardClick = { onCardClick(index) },
                     onDeleteClick = { onDeleteClick(index) },
                     onEditClick = { onEditClick(index) }
